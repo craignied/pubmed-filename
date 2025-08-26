@@ -1,0 +1,27 @@
+# Node modules
+node_modules/
+
+# Playwright browser downloads
+playwright-browsers/
+
+# Test artifacts
+test-results/
+screenshots/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs
+*.log
+npm-debug.log*
+
+# Environment files
+.env
+.env.local
