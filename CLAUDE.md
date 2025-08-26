@@ -106,11 +106,20 @@ Create `pubmed-extractor.js` that:
 ```
 pubmed-filename-generator/
 ├── CLAUDE.md                 # This documentation
-├── bookmarklet.js            # Final bookmarklet code
+├── bookmarklet.js            # Human-readable bookmarklet code (DEVELOPMENT ONLY)
+├── bookmarklet-minified.js   # Final bookmarklet for actual use (COPY THIS ONE!)
 ├── pubmed-extractor.js       # Playwright development/debugging script  
 ├── test-urls.txt            # List of PubMed URLs for testing
-└── package.json             # Playwright dependency
+├── README.md                 # User documentation and installation instructions
+└── package.json             # Dependencies
 ```
+
+## CRITICAL: Which File to Use
+
+**❌ DO NOT bookmark `bookmarklet.js`** - Contains comments that break bookmarklets
+**✅ DO bookmark `bookmarklet-minified.js`** - No comments, starts with `javascript:`
+
+The minified version is the one users copy-paste into their browser bookmarks.
 
 ## Next Steps
 

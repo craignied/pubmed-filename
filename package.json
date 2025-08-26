@@ -1,0 +1,16 @@
+{
+  "name": "pubmed-filename-generator",
+  "version": "1.0.0",
+  "description": "Bookmarklet for generating standardized filenames from PubMed articles",
+  "main": "pubmed-extractor.js",
+  "scripts": {
+    "test": "node pubmed-extractor.js",
+    "debug": "node pubmed-extractor.js --debug"
+  },
+  "devDependencies": {
+    "playwright": "^1.40.0"
+  },
+  "keywords": ["pubmed", "bookmarklet", "filename", "academic", "papers"],
+  "author": "",
+  "license": "MIT"
+}
