@@ -2,7 +2,10 @@
 
 ## Project Goal
 
-Create a **bookmarklet** that automatically generates standardized filenames for academic papers downloaded from PubMed.
+Generate standardized filenames for academic papers downloaded from PubMed, using **two complementary tools**:
+
+1. **Browser Bookmarklet** - extracts metadata from PubMed pages, copies filename to clipboard
+2. **PMID Renamer Mac App** - renames downloaded PDF files by fetching metadata from PubMed API
 
 ### Target Filename Format
 ```
@@ -14,120 +17,117 @@ Create a **bookmarklet** that automatically generates standardized filenames for
 Hum Reprod Open 2024 Jonge Global status male fert 38699533.pdf
 ```
 
-## Current Workflow Problem
+## Workflow
 
-The user currently follows this workflow:
 1. Find article on PubMed
-2. Click "Find it at UIC" 
-3. Download PDF
-4. **Manual filename entry** - by the time they reach the save dialog, they've forgotten the metadata and have to go back to copy journal name, author, PMID, etc.
-
-## Desired Solution
-
-A **bookmarklet** that:
-- Runs with one click on any PubMed article page
-- Automatically extracts: journal abbreviation, year, first author, PMID
-- Prompts user for: short reference description
-- Copies the formatted filename to clipboard
-- User can then paste when saving the PDF
-
-## Technical Requirements
-
-### Data Extraction Targets
-- **Journal**: Extract from `<meta name="citation_publisher" content="...">` (preferred) or journal button text
-- **Year**: Extract from `.cit` element text matching `(\d{4})` pattern
-- **First Author**: Extract last name from `.authors a:first-child` element  
-- **PMID**: Extract from page text matching `PMID:\s*(\d+)` pattern
-- **User Input**: Short reference description
-
-### Browser Compatibility
-- Must work as a bookmarklet (javascript: URL)
-- Handle clipboard API limitations gracefully
-- Avoid variable declaration conflicts on repeated use
-
-## Challenges Encountered
-
-1. **Browser Security**: Some browsers block `javascript:` URLs in bookmarks
-2. **Variable Conflicts**: Console variable redeclaration errors when testing
-3. **Clipboard Permissions**: Browser clipboard API restrictions
-4. **DOM Selector Reliability**: Need robust selectors that work across different PubMed article layouts
-
-## Development Approach: Use Playwright for Debugging
-
-### Why Playwright?
-
-**Problems with console development:**
-- Browser security blocking bookmarklets
-- Variable declaration conflicts
-- Limited debugging visibility
-- Manual testing on live pages
-
-**Playwright advantages:**
-- Clean environment each run
-- Systematic selector testing
-- Screenshot debugging capabilities  
-- Test multiple PubMed articles automatically
-- Handle dynamic content loading
-- Develop interactively with UI injection
-
-### Development Steps
-
-1. **Debug with Playwright first**
-   - Test data extraction selectors against live PubMed pages
-   - Verify universality across different articles
-   - Handle edge cases and fallback methods
-   - Screenshot debugging for visual verification
-
-2. **Convert to bookmarklet**
-   - Once selectors are proven reliable in Playwright
-   - Wrap in IIFE to avoid variable conflicts
-   - Add clipboard fallback methods
-   - Test final bookmarklet across browsers
-
-### Playwright Development Script
-
-Create `pubmed-extractor.js` that:
-- Tests all metadata extraction methods
-- Logs detailed debugging information
-- Takes screenshots for visual debugging
-- Tests multiple article URLs for universality
-- Provides interactive UI for real-world testing
-
-## Success Criteria
-
-- **One-click operation**: Single bookmark click extracts all metadata
-- **Universal compatibility**: Works across different PubMed article types
-- **Reliable extraction**: Consistently finds journal, year, author, PMID
-- **User-friendly**: Simple prompt for short reference, clear success feedback
-- **Cross-browser**: Functions in Chrome, Firefox, Safari, Edge
+2. Click bookmarklet to copy filename to clipboard (optional)
+3. Click "Find it at UIC" and download PDF
+4. Either paste the filename from clipboard, or use PMID Renamer app to rename the file
 
 ## File Structure
 
 ```
-pubmed-filename-generator/
-├── CLAUDE.md                 # This documentation
-├── bookmarklet.js            # Human-readable bookmarklet code (DEVELOPMENT ONLY)
-├── bookmarklet-minified.js   # Final bookmarklet for actual use (COPY THIS ONE!)
-├── pubmed-extractor.js       # Playwright development/debugging script  
-├── test-urls.txt            # List of PubMed URLs for testing
-├── README.md                 # User documentation and installation instructions
-└── package.json             # Dependencies
+pubmed/
+├── CLAUDE.md                    # This documentation
+├── README.md                    # User documentation
+├── package.json                 # Dependencies (Playwright for testing)
+│
+├── bookmarklet.js               # Human-readable bookmarklet (DEVELOPMENT ONLY)
+├── bookmarklet-minified.js      # Final bookmarklet for actual use (COPY THIS ONE!)
+├── pubmed-extractor.js          # Playwright development/debugging script
+├── test-urls.txt                # List of PubMed URLs for testing
+│
+├── pmidlabel_gui_enhanced.py    # PMID Renamer GUI app source (primary)
+├── pmidlabel.py                 # PMID Renamer CLI version
+│
+└── pmidlabel-app/               # Mac .app bundle build resources
+    ├── create_mac_app.sh        # Script to build the .app bundle
+    ├── create_icon.py           # Icon generator script
+    ├── AppIcon.icns             # App icon file
+    ├── AppIcon.iconset/         # Icon source images
+    ├── CLAUDE.md                # Legacy app-specific docs
+    ├── README_GUI.md            # GUI documentation
+    └── QUICKSTART.md            # Quick reference
 ```
 
-## CRITICAL: Which File to Use
+## Tool 1: Browser Bookmarklet
 
-**❌ DO NOT bookmark `bookmarklet.js`** - Contains comments that break bookmarklets
-**✅ DO bookmark `bookmarklet-minified.js`** - No comments, starts with `javascript:`
+### How It Works
+- Runs on any PubMed article page with one click
+- Scrapes metadata from the page DOM (meta tags, citation elements)
+- Shows a dialog to review extracted data and enter a short description
+- Copies the formatted filename to clipboard
 
-The minified version is the one users copy-paste into their browser bookmarks.
+### CRITICAL: Which File to Use
+- **bookmarklet.js** - Development version with comments. DO NOT bookmark this.
+- **bookmarklet-minified.js** - Minified version. COPY THIS ONE for bookmarking.
 
-## Next Steps
+### Data Extraction (DOM scraping)
+- **Journal**: `meta[name="citation_publisher"]` or `meta[name="citation_journal_title"]`
+- **Year**: `.cit` element text or `meta[name="citation_date"]`
+- **First Author**: `.authors a:first-child` or `meta[name="citation_author"]`
+- **PMID**: Page text `PMID:\s*(\d+)` or URL pathname
 
-1. Set up Playwright environment (`npm install playwright`)
-2. Run debugging script against target PubMed article
-3. Test selector reliability across multiple articles
-4. Refine extraction logic based on test results
-5. Convert proven logic to bookmarklet format
-6. Final cross-browser testing
+### UI Features
+- Editable author field
+- Short reference input with clear (x) button
+- Live filename preview
+- Enter key to copy, Cancel to dismiss
 
-The Playwright approach allows systematic development and debugging before committing to the bookmarklet format, ensuring a more reliable final product.
+## Tool 2: PMID Renamer Mac App
+
+### How It Works
+- Native macOS Python/Tkinter GUI app
+- User types a description, then either drags PDFs onto the window or clicks "Select PDF Files"
+- Reads the PMID from the PDF filename (expects files named like `38699533.pdf`)
+- Fetches metadata from PubMed E-utilities API (MEDLINE format)
+- Renames the actual file in place
+
+### Data Extraction (PubMed API)
+- **Endpoint**: `https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi`
+- **Journal**: `TA` field (journal abbreviation)
+- **Year**: `DP` field (publication date)
+- **First Author**: First `AU` field (author last name)
+
+### UI Features
+- Description text field with clear (x) button
+- "Select PDF Files" button
+- Drag-and-drop onto window (requires tkinterdnd2)
+- Silent operation with system beep on completion
+
+### Building the App
+```bash
+cd pmidlabel-app
+bash create_mac_app.sh
+```
+This builds `PMID Renamer.app` to `/Applications` by default. Use `-d <path>` to override.
+
+### Dependencies
+- Python 3.11 (Homebrew preferred, avoids tkinterdnd2 issues with 3.13)
+- `requests` - PubMed API calls
+- `tkinterdnd2` - drag-and-drop support (optional, degrades gracefully)
+
+### Python Interpreter Notes
+- Avoid Xcode's Python 3.9 (crashes on macOS Sequoia)
+- Python 3.13 has tkinterdnd2 incompatibility
+- `launcher.sh` in the app bundle auto-detects the right Python
+
+## Development
+
+### Bookmarklet Development
+Use Playwright for systematic testing:
+```bash
+npm install
+npm run test
+```
+
+### Rebuilding the Mac App
+After editing `pmidlabel_gui_enhanced.py`:
+```bash
+cd pmidlabel-app && bash create_mac_app.sh
+```
+
+### Testing the CLI Version
+```bash
+python3 pmidlabel.py 40237684 "Core outcomes male infert"
+```

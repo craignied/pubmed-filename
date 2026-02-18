@@ -164,7 +164,10 @@
     
     <div style="margin-bottom: 15px;">
       <label style="display: block; font-weight: 600; margin-bottom: 5px; color: #333;">Short Reference <span style="color: #e74c3c;">*</span>:</label>
-      <input type="text" id="ref-input" placeholder="e.g. Global status male fert" style="width: 100%; padding: 8px; border: 1px solid #007cba; border-radius: 4px; font-size: 14px;">
+      <div style="position: relative;">
+        <input type="text" id="ref-input" placeholder="e.g. Global status male fert" style="width: 100%; padding: 8px 28px 8px 8px; border: 1px solid #007cba; border-radius: 4px; font-size: 14px; box-sizing: border-box;">
+        <span id="ref-clear" style="position: absolute; right: 8px; top: 50%; transform: translateY(-50%); cursor: pointer; color: #999; font-size: 16px; line-height: 1; display: none; user-select: none;" title="Clear">&times;</span>
+      </div>
     </div>
     
     <div style="margin-bottom: 15px;">
@@ -208,9 +211,23 @@
     }
   }
   
+  // Clear button for ref input
+  const refClear = document.getElementById('ref-clear');
+
+  function toggleClearBtn() {
+    refClear.style.display = refInput.value ? 'block' : 'none';
+  }
+
+  refClear.addEventListener('click', function() {
+    refInput.value = '';
+    toggleClearBtn();
+    updatePreview();
+    refInput.focus();
+  });
+
   // Event listeners
   authorInput.addEventListener('input', updatePreview);
-  refInput.addEventListener('input', updatePreview);
+  refInput.addEventListener('input', function() { toggleClearBtn(); updatePreview(); });
   
   // Copy to clipboard
   copyBtn.addEventListener('click', function() {
