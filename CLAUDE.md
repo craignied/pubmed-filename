@@ -1,3 +1,5 @@
+Read and follow the instructions in /Users/craign/code/locker/CLAUDE.md before proceeding.
+
 # PubMed Filename Generator
 
 ## Project Goal
